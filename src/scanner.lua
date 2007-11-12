@@ -44,7 +44,7 @@ end
 --]=]
 
 
--- $Id: scanner.lua,v 1.1 2007/11/12 20:32:01 hanjos Exp $ 
+-- $Id: scanner.lua,v 1.1.1.1 2007/11/12 20:32:01 hanjos Exp $ 
 
 -- basic modules
 local _G      = _G

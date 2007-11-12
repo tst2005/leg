@@ -140,7 +140,7 @@ The implementation has certain peculiarities that merit clarification:
 * In Lua's [http://www.lua.org/manual/5.1/manual.html#8 original extended BNF grammar], `Var` and `FunctionCall` are defined using left recursion, which is unavailable in PEGs. In this implementation, the problem was solved by modifying the PEG rules to eliminate the left recursion, and by setting some markers (with some LPeg chicanery) to ensure the proper pattern is being used.
 --]]
 
--- $Id: parser.lua,v 1.1 2007/11/12 20:32:02 hanjos Exp $
+-- $Id: parser.lua,v 1.1.1.1 2007/11/12 20:32:02 hanjos Exp $
 
 -- basic modules
 local _G     = _G

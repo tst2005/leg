@@ -176,7 +176,7 @@ The printed result is:
 --]=]
 
 
--- $Id: grammar.lua,v 1.1 2007/11/12 20:32:01 hanjos Exp $
+-- $Id: grammar.lua,v 1.1.1.1 2007/11/12 20:32:01 hanjos Exp $
 
 -- basic functions
 local assert  = assert

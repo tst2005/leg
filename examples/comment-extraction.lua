@@ -5,7 +5,7 @@
 --
 -- Authors: Humberto Anjos and Francisco Sant'Anna
 -- 
--- $Id: comment-extraction.lua,v 1.1 2007/11/12 20:32:01 hanjos Exp $
+-- $Id: comment-extraction.lua,v 1.1.1.1 2007/11/12 20:32:01 hanjos Exp $
 --
 -------------------------------------------------------------------------------
 

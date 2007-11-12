@@ -5,7 +5,7 @@
 --
 -- Author: Humberto Anjos
 -- 
--- $Id: syntax-highlighting.lua,v 1.1 2007/11/12 20:32:01 hanjos Exp $
+-- $Id: syntax-highlighting.lua,v 1.1.1.1 2007/11/12 20:32:01 hanjos Exp $
 --
 -------------------------------------------------------------------------------
 
