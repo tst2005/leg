@@ -9,7 +9,7 @@
 
 # Description
 
-This module defines a handful of operations which can be applied to 
+This module defines a handful of operations which can be applied to
 [http://www.inf.puc-rio.br/~roberto/lpeg.html LPeg] grammars in general.
 
 # Dependencies
@@ -20,57 +20,57 @@ This module defines a handful of operations which can be applied to
 
 ## Piping
 
-Pattern matching dissociates the notion of *matching* from the notion of 
-*capturing*: matching checks if a given string follows a certain pattern, 
-and capturing generates values according to the match made. This division 
+Pattern matching dissociates the notion of *matching* from the notion of
+*capturing*: matching checks if a given string follows a certain pattern,
+and capturing generates values according to the match made. This division
 allows interesting possibilities:
 
 * different problems can be solved by applying different captures to the same grammar;
 * captures may be defined separately;
 * captures may be done on top of other captures.
 
-Accounting for the first and second bullets, the grammar given in 
-[parser.html parser] has no captures, enabling the user to reuse it to solve any 
-problems that require a Lua grammar. One good example is documentation 
+Accounting for the first and second bullets, the grammar given in
+[parser.html parser] has no captures, enabling the user to reuse it to solve any
+problems that require a Lua grammar. One good example is documentation
 generation, described in a little more detail [#section_Example below].
 
-The third bullet depicts a more interesting idea: a capture might take the 
-result of another capture as input, doing a further transformation of the 
-original data. This capture chaining, with the latter ones using the former's 
-output as its input, is very similar to [http://en.wikipedia.org/wiki/Pipeline_%28Unix%29 Unix pipelines], 
+The third bullet depicts a more interesting idea: a capture might take the
+result of another capture as input, doing a further transformation of the
+original data. This capture chaining, with the latter ones using the former's
+output as its input, is very similar to [http://en.wikipedia.org/wiki/Pipeline_%28Unix%29 Unix pipelines],
 so this mechanism was named **piping**.
 
 ## Completing
 
-With piping, several levels of captures can be chained together up to the 
-most appropriate for the task at hand. Yet some levels might require extra rules, and modifications to existing ones, to ensure proper matching. 
+With piping, several levels of captures can be chained together up to the
+most appropriate for the task at hand. Yet some levels might require extra rules, and modifications to existing ones, to ensure proper matching.
 
-To avoid manual copying, the new grammar should redefine only the necessary 
-rules, copying the rest from the older grammar. This action is dubbed 
+To avoid manual copying, the new grammar should redefine only the necessary
+rules, copying the rest from the older grammar. This action is dubbed
 **completing**.
 
 ## Applying
 
-Once a new rule set is created and [#section_Completing completed], and 
-all captures are correctly [#section_Piping piped], all that's left is 
-to put them together, a process called **applying**. The result is a grammar ready for [http://www.inf.puc-rio.br/~roberto/lpeg.html#lpeg lpeg.P] 
+Once a new rule set is created and [#section_Completing completed], and
+all captures are correctly [#section_Piping piped], all that's left is
+to put them together, a process called **applying**. The result is a grammar ready for [http://www.inf.puc-rio.br/~roberto/lpeg.html#lpeg lpeg.P]
 consumption, whose pattern will return the intended result when a match is made.
 
 ## Example
 
-Let's consider the problem of documenting a Lua module. In this case, comments 
+Let's consider the problem of documenting a Lua module. In this case, comments
 must be captured before every function declaration when in the outermost scope:
 
 ``
 -- -- the code to parse
 subject = %[%[
---  -- Calculates the sum a+b. 
+--  -- Calculates the sum a+b.
 --  -- An extra line.
   function sum (a, b)
 --  -- code
   end
 
---  -- f1: assume a variable assignment is not a proper declaration for an 
+--  -- f1: assume a variable assignment is not a proper declaration for an
 --  -- exported function
   f1 = function ()
 --  -- code
@@ -80,14 +80,14 @@ subject = %[%[
 --    -- this function is not in the outermost scope
     function aux() end
   end
-  
+
   function something:other(a, ...)
 --    -- a global function without comments
   end
 %]%]
 ``
 
-In the code above only `sum` and `something:other` should be documented, as `f1` isn't properly (by our standards) declared and `aux` is not in the outermost scope. 
+In the code above only `sum` and `something:other` should be documented, as `f1` isn't properly (by our standards) declared and `aux` is not in the outermost scope.
 
 By combining [http://www.inf.puc-rio.br/~roberto/lpeg.html LPeg] and the modules [scanner.html scanner], [parser.html parser] and [grammar.html grammar], this specific problem can be solved as follows:
 
@@ -131,13 +131,13 @@ Since no captures are being made, [http://www.inf.puc-rio.br/~roberto/lpeg.html#
 -- -- the rules table below will come from parser.rules .
 captures = {
   %[1%] = function (...) -- the initial rule
-    return '&lt;function&gt;'..table.concat{...}..'&lt;/function&gt;' 
+    return '&lt;function&gt;'..table.concat{...}..'&lt;/function&gt;'
   end,
-  
+
   GlobalFunction = function (name, parlist)
-    return '&lt;name&gt;'..name..'&lt;/name&gt;&lt;parlist&gt;'..(parlist or '')..'&lt;/parlist&gt;' 
+    return '&lt;name&gt;'..name..'&lt;/name&gt;&lt;parlist&gt;'..(parlist or '')..'&lt;/parlist&gt;'
   end,
-  
+
   FuncName = grammar.C, -- capture the raw text
   ParList  = grammar.C, -- capture the raw text
   COMMENT  = scanner.comment2text, -- remove the comment trappings
@@ -156,7 +156,7 @@ rules = {
 patt = lpeg.P( grammar.apply(parser.rules, rules, captures) )
 
 -- -- a pattern that matches a sequence of patts and concatenates the results
-patt = (patt + Stat + scanner.ANY)^0 / function(...) 
+patt = (patt + Stat + scanner.ANY)^0 / function(...)
   return table.concat({...}, '\n\n') -- some line breaks for easier reading
 end
 
@@ -164,7 +164,7 @@ end
 print(patt:match(subject))
 ``
 
-`FuncBody` needs no captures, as `Block` and all its non-terminals have none; it 
+`FuncBody` needs no captures, as `Block` and all its non-terminals have none; it
 just needs to pass along any captures made by `ParList`. `NameList` and `ID` also have no captures, and the whole subject string is passed further.
 
 The printed result is:
@@ -228,7 +228,7 @@ function complete (dest, orig)
 			dest[rule] = patt
 		end
 	end
-  
+
 	return dest
 end
 
@@ -258,11 +258,11 @@ function pipe (dest, orig)
 end
 
 --[[
-[#section_Completing Completes] `rules` with `grammar` and then [#Applying applies] `captures`.     
+[#section_Completing Completes] `rules` with `grammar` and then [#Applying applies] `captures`.
 
 `rules` can either be:
-* a single pattern, which is taken to be the new initial rule, 
-* a possibly incomplete LPeg grammar, as per [#function_complete complete], or 
+* a single pattern, which is taken to be the new initial rule,
+* a possibly incomplete LPeg grammar, as per [#function_complete complete], or
 * `nil`, which means no new rules are added.
 
 `captures` can either be:
@@ -271,7 +271,7 @@ end
 
 **Parameters:**
 * `grammar`: the old grammar. It stays unmodified.
-* `rules`: optional, the new rules. 
+* `rules`: optional, the new rules.
 * `captures`: optional, the final capture table.
 
 **Returns:**
@@ -282,9 +282,9 @@ function apply (grammar, rules, captures)
 		if type(rules) ~= 'table' then
 			rules = { rules }
 		end
-    
-    grammar = complete(rules, grammar)
-    
+
+		grammar = complete(rules, grammar)
+
 		if type(grammar[1]) == 'string' then
 			rules[1] = lpeg.V(grammar[1])
 		end
@@ -292,12 +292,12 @@ function apply (grammar, rules, captures)
 
 	if captures ~= nil then
 		assert(type(captures) == 'table', 'captures must be a table')
-    
+
 		for rule, cap in pairs(captures) do
 			grammar[rule] = grammar[rule] / cap
 		end
 	end
-  
+
 	return grammar
 end
 

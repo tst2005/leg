@@ -162,18 +162,18 @@ module 'leg.parser'
 
 -- Searches for the last substring in s which matches pattern
 local function rfind(s, pattern, init, finish)
-  init = init or #s
-  finish = finish or 1
+	init = init or #s
+	finish = finish or 1
   
-  for i = init, finish, -1 do
-    local lfind, rfind = string.find(s, pattern, i)
+	for i = init, finish, -1 do
+		local lfind, rfind = string.find(s, pattern, i)
     
-    if lfind and rfind then
-      return lfind, rfind
-    end
-  end
+		if lfind and rfind then
+			return lfind, rfind
+		end
+	end
   
-  return nil
+	return nil
 end
 
 -- Counts the number of lines (separated by *'\n'*) in `subject`.
@@ -205,13 +205,13 @@ end
 -- throws an error if the grammar rule `rule` doesn't match
 -- `desc` is there for a slightly better error message
 local function CHECK(rule, desc)
-  desc = desc or 'statement'
+	desc = desc or 'statement'
   
-  return m.V(rule) + m.P(function (s, i)
-    local line = lines(s:sub(1, i)) - 1
+	return m.V(rule) + m.P(function (s, i)
+		local line = lines(s:sub(1, i)) - 1
     
-    error('Malformed '..desc..' near line '..line..': a "'..rule:lower()..'" is missing!', 0)
-  end)
+		error('Malformed '..desc..' near line '..line..': a "'..rule:lower()..'" is missing!', 0)
+	end)
 end
 
 -- this will be used a lot below
@@ -225,13 +225,13 @@ rules = {
 	  IGNORED = scanner.IGNORED  -- seen as S below
 	, EPSILON = m.P(true)
 	, EOF     = scanner.EOF
-  , BOF     = scanner.BOF
-  , NUMBER  = scanner.NUMBER
+	, BOF     = scanner.BOF
+	, NUMBER  = scanner.NUMBER
 	, ID      = scanner.IDENTIFIER
 	, STRING  = scanner.STRING
 	, Name    = m.V'ID'
 
-  -- CHUNKS
+	-- CHUNKS
 	, [1]     = m.V'CHUNK'
 	, CHUNK   = scanner.BANG^-1 * m.V'Block'
 
@@ -241,32 +241,32 @@ rules = {
 
 	-- STATEMENTS
 	, Stat              = m.V'Assign' + m.V'FunctionCall' + m.V'Do' 
-                      + m.V'While' + m.V'Repeat' + m.V'If'
+	                    + m.V'While' + m.V'Repeat' + m.V'If'
 	                    + m.V'NumericFor' + m.V'GenericFor' 
-                      + m.V'GlobalFunction' + m.V'LocalFunction' 
-                      + m.V'LocalAssign'
+	                    + m.V'GlobalFunction' + m.V'LocalFunction' 
+	                    + m.V'LocalAssign'
 	, Assign        = m.V'VarList' *S* m.V'=' *S* m.V'ExpList'
 	, Do            = m.V'DO' *S* m.V'Block' *S* CHECK('END', 'do block')
 	, While         = m.V'WHILE' *S* m.V'Exp' *S* CHECK('DO', 'while loop')
-                      *S* m.V'Block' *S* CHECK('END', 'while loop')
+	                    *S* m.V'Block' *S* CHECK('END', 'while loop')
 	, Repeat        = m.V'REPEAT' *S* m.V'Block' 
-                      *S* CHECK('UNTIL', 'repeat loop') *S* m.V'Exp'
+	                    *S* CHECK('UNTIL', 'repeat loop') *S* m.V'Exp'
 	, If            = m.V'IF' *S* m.V'Exp' *S* CHECK('THEN', 'then block') *S* m.V'Block'
 	                    * (S* m.V'ELSEIF' *S* m.V'Exp' 
-                      *S* CHECK('THEN', 'elseif block') *S* m.V'Block')^0
+	                    *S* CHECK('THEN', 'elseif block') *S* m.V'Block')^0
 	                    * ((S* m.V'ELSE' * m.V'Block') + m.V'EPSILON')
 	                    * S* CHECK('END', 'if statement')
 	, NumericFor    = m.V'FOR' *S* m.V'Name' *S* m.V'=' *S* m.V'Exp' 
-                      *S* m.V',' *S* m.V'Exp' 
-                      *S* ((m.V',' *S* m.V'Exp') + m.V'EPSILON')
+	                    *S* m.V',' *S* m.V'Exp' 
+	                    *S* ((m.V',' *S* m.V'Exp') + m.V'EPSILON')
 	                    *S* CHECK('DO', 'numeric for loop') *S* m.V'Block' *S* CHECK('END', 'numeric for loop')
 	, GenericFor    = m.V'FOR' *S* m.V'NameList' *S* m.V'IN' 
-                      *S* m.V'ExpList' *S* CHECK('DO', 'generic for loop') *S* m.V'Block' *S* CHECK('END', 'generic for loop')
+	                    *S* m.V'ExpList' *S* CHECK('DO', 'generic for loop') *S* m.V'Block' *S* CHECK('END', 'generic for loop')
 	, GlobalFunction = m.V'FUNCTION' *S* m.V'FuncName' *S* m.V'FuncBody'
 	, LocalFunction = m.V'LOCAL' *S* m.V'FUNCTION' *S* m.V'Name' 
-                      *S* m.V'FuncBody'
+	                    *S* m.V'FuncBody'
 	, LocalAssign   = m.V'LOCAL' *S* m.V'NameList' 
-                      * (S* m.V'=' *S* m.V'ExpList')^-1
+	                    * (S* m.V'=' *S* m.V'ExpList')^-1
 	, LastStat          = m.V'RETURN' * (S* m.V'ExpList')^-1
 	                    + m.V'BREAK'
 
@@ -278,8 +278,8 @@ rules = {
 	-- EXPRESSIONS
 	, Exp             = m.V'_SimpleExp' * (S* m.V'BinOp' *S* m.V'_SimpleExp')^0
 	, _SimpleExp      = m.V'NIL' + m.V'FALSE' + m.V'TRUE' + m.V'NUMBER' 
-                    + m.V'STRING' + m.V'...' + m.V'Function' + m.V'_PrefixExp' 
-                    + m.V'TableConstructor' + (m.V'UnOp' *S* m.V'_SimpleExp')
+	                  + m.V'STRING' + m.V'...' + m.V'Function' + m.V'_PrefixExp' 
+	                  + m.V'TableConstructor' + (m.V'UnOp' *S* m.V'_SimpleExp')
 	, _PrefixExp      = ( m.V'Name'               * setPrefix'Var'  -- Var
 	                    + m.V'_PrefixExpParens'   * setPrefix(nil)) -- removes last prefix
 	                    * (S* (
@@ -294,16 +294,16 @@ rules = {
 	, _PrefixExpArgs   = m.V'Args'
 	, _PrefixExpColon  = m.V':' *S* m.V'ID' *S* m.V'_PrefixExpArgs'
 
-  -- solving the left recursion problem
+	-- solving the left recursion problem
 	, Var          = m.V'_PrefixExp' * matchPrefix'Var'
 	, FunctionCall = m.V'_PrefixExp' * matchPrefix'Call'
 
 	-- FUNCTIONS
 	, Function = m.V'FUNCTION' *S* m.V'FuncBody'
 	, FuncBody = m.V'(' *S* (m.V'ParList'+m.V'EPSILON') *S* CHECK(')', 'parameter list')
-             *S* m.V'Block' *S* CHECK('END', 'function body')
+	           *S* m.V'Block' *S* CHECK('END', 'function body')
 	, FuncName = m.V'Name' * (S* m.V'_PrefixExpDot')^0 
-             * ((S* m.V':' *S* m.V'ID') + m.V'EPSILON')
+	           * ((S* m.V':' *S* m.V'ID') + m.V'EPSILON')
 	, Args     = m.V'(' *S* (m.V'ExpList'+m.V'EPSILON') *S* CHECK(')', 'argument list')
 	           + m.V'TableConstructor' + m.V'STRING'
 	, ParList  = m.V'NameList' * (S* m.V',' *S* m.V'...')^-1
@@ -312,7 +312,7 @@ rules = {
 	-- TABLES
 	, TableConstructor = m.V'{' *S* (m.V'FieldList'+m.V'EPSILON') *S* CHECK('}', 'table constructor')
 	, FieldList        = m.V'Field' * (S* m.V'FieldSep' *S* m.V'Field')^0 
-                     * (S* m.V'FieldSep')^-1
+	                   * (S* m.V'FieldSep')^-1
 	, Field            = m.V'_FieldSquare' + m.V'_FieldID' + m.V'_FieldExp'
 	, _FieldSquare     = m.V'[' *S* m.V'Exp' *S* CHECK(']', 'index field') *S* CHECK('=', 'field assignment') *S* m.V'Exp'
 	, _FieldID         = m.V'ID' *S* m.V'=' *S* m.V'Exp'
@@ -322,8 +322,8 @@ rules = {
 
 	-- OPERATORS
 	, BinOp    = m.V'+'   + m.V'-'  + m.V'*' + m.V'/'  + m.V'^'  + m.V'%'  
-             + m.V'..'  + m.V'<'  + m.V'<=' + m.V'>' + m.V'>=' + m.V'==' 
-             + m.V'~='  + m.V'AND' + m.V'OR'
+	           + m.V'..'  + m.V'<'  + m.V'<=' + m.V'>' + m.V'>=' + m.V'==' 
+	           + m.V'~='  + m.V'AND' + m.V'OR'
 	, UnOp     = m.V'-' + m.V'NOT' + m.V'#'
 }
 
@@ -341,23 +341,23 @@ Checks if `input` is valid Lua source code.
 * `true`, if `input` is valid Lua source code, or `false` and an error message if the matching fails.
 --]]
 function check(input)
-  local builder = m.P(rules)
-  local result = builder:match(input)
+	local builder = m.P(rules)
+	local result = builder:match(input)
   
-  if result ~= #input + 1 then -- failure, build the error message
-    local init, _ = rfind(input, '\n*', result - 1) 
-    local _, finish = string.find(input, '\n*', result + 1)
+	if result ~= #input + 1 then -- failure, build the error message
+		local init, _ = rfind(input, '\n*', result - 1) 
+		local _, finish = string.find(input, '\n*', result + 1)
+
+		init = init or 0
+		finish = finish or #input
+
+		local line = lines(input:sub(1, result))
+		local vicinity = input:sub(init + 1, finish)
     
-    init = init or 0
-    finish = finish or #input
-    
-    local line = lines(input:sub(1, result))
-    local vicinity = input:sub(init + 1, finish)
-    
-    return false, 'Syntax error at line '..line..', near "'..vicinity..'"'
-  end
+		return false, 'Syntax error at line '..line..', near "'..vicinity..'"'
+	end
   
-  return true
+	return true
 end
 
 --[[
@@ -371,5 +371,5 @@ Uses [grammar.html#function_apply grammar.apply] to return a new grammar, with `
 * the extended grammar.
 --]]
 function apply(extraRules, captures)
-  return grammar.apply(rules, extraRules, captures)
+	return grammar.apply(rules, extraRules, captures)
 end

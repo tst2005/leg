@@ -81,7 +81,7 @@ local PUNCTUATION = m.S'!@$&|?~`´'
 local function lines (subject)
 	local inc = function (l) return l + 1 end
 	local L = m.Ca( m.Cc(1) * (m.P'\n'/inc + m.P(1)) ^0 )
-  
+
 	return L:match(subject)
 end
 
@@ -102,18 +102,18 @@ patt = intended_pattern^0 %* (EOF + error'character after EOF')
 It may also be used as a normal function:
 ``
 function (subject, i)
-  if bad_condition then
-    error'bad condition'(subject, i)
-  end
+	if bad_condition then
+		error'bad condition'(subject, i)
+	end
 end
 ``
 --]]
 function error (msg)
 	return function (subject, i)
 		local line = lines(string.sub(subject,1,i))
-    
-    _G.error('Lexical error in line '..line..', near "'
-      ..(subject:sub(i-10,i)):gsub('\n','EOL')..'": '..msg, 0)
+
+		_G.error('Lexical error in line '..line..', near "'
+			..(subject:sub(i-10,i)):gsub('\n','EOL')..'": '..msg, 0)
 	end
 end
 
@@ -129,7 +129,7 @@ Strips all prefixing `--` and enclosing `--%[=%*%[` from comment tokens.
 function comment2text (comment) -- TEMP: LPeg could be used here
 	local ret, i, brackets = comment:find('^%-%-%[(=*)%[', i)
 	
-  if ret then
+	if ret then
 		comment = comment:gsub('^%-%-%['..brackets..'%[', '')  -- removes "--[===["
 		comment = comment:gsub('%]'..brackets..'%]$', '')      -- removes "]===]"
 		comment = '\n' .. comment
@@ -140,7 +140,7 @@ function comment2text (comment) -- TEMP: LPeg could be used here
 	else
 		comment = comment:gsub('^%-%-+%s*', '')
 	end
-  
+
 	return comment
 end
 
@@ -155,45 +155,45 @@ Encloses the text with comment markers.
 --]]
 function text2comment (text)
 	-- finds a pattern anywhere in the subject, ripped from LPeg's home page
-  local function anywhere(patt)
-    return m.P { m.P(patt) + 1 * m.V(1) }
-  end
-  
-  -- searching for the largest [(=)*[ in the text
-  local max = -1
-  
-  local updateMax = function (c) if max < #c then max = #c end end
-  local openPatt = m.P'[' * m.C((m.P'=')^0) * m.P'[' / updateMax
-  local closePatt = m.P']' * m.C((m.P'=')^0) * m.P']' / updateMax
-  
-  anywhere(openPatt):match(text)
-  anywhere(closePatt):match(text)
-  
-  -- enclosing text with --[(=)^(max+1)[ and --](=)^(max + 1)]
-  local equals = string.rep('=', max + 1)
+	local function anywhere(patt)
+		return m.P { m.P(patt) + 1 * m.V(1) }
+	end
+
+	-- searching for the largest [(=)*[ in the text
+	local max = -1
+
+	local updateMax = function (c) if max < #c then max = #c end end
+	local openPatt = m.P'[' * m.C((m.P'=')^0) * m.P'[' / updateMax
+	local closePatt = m.P']' * m.C((m.P'=')^0) * m.P']' / updateMax
+
+	anywhere(openPatt):match(text)
+	anywhere(closePatt):match(text)
+
+	-- enclosing text with --[(=)^(max+1)[ and --](=)^(max + 1)]
+	local equals = string.rep('=', max + 1)
 	return '--['..equals..'[\n'..text..'--]'..equals..']'
 end
 
 -- used for escape processing in string2text
 local escapeTable = {
-  ['\\n'] = '\n',
-  ['\\t'] = '\t',
-  ['\\r'] = '\r',
-  ['\\v'] = '\v',
-  ['\\a'] = '\a',
-  ['\\b'] = '\b',
-  ['\\f'] = '\f',
-  ['\\"'] = '"',
-  ["\\'"] = "'",
-  ['\\\\'] = '\\',
+	['\\n'] = '\n',
+	['\\t'] = '\t',
+	['\\r'] = '\r',
+	['\\v'] = '\v',
+	['\\a'] = '\a',
+	['\\b'] = '\b',
+	['\\f'] = '\f',
+	['\\"'] = '"',
+	["\\'"] = "'",
+	['\\\\'] = '\\',
 }
 
 -- used for escape processing in text2string
 local reverseEscapeTable = {}
 
 for k, v in pairs(escapeTable) do
-  reverseEscapeTable[v] = k
-  reverseEscapeTable[string.byte(v)] = k
+	reverseEscapeTable[v] = k
+	reverseEscapeTable[string.byte(v)] = k
 end
 
 --[=[
@@ -206,34 +206,33 @@ Strips all enclosing `'`, `"`, and `%[=%*%[` from string tokens, and processes e
 * the text without string enclosers.
 --]=]
 function string2text(str)
-  local escapeNum = m.C(N^-3) / tonumber
-  local escapePatt = (
-      (m.P'\\' * m.S[[ntrvabf'"\\]]) / escapeTable
-    + (m.P'\\' * escapeNum) / string.char
-  )
-  
-  local openDQuote, openQuote = m.P'"' / '', m.P"'" / ''
-  local closeDQuote, closeQuote = openDQuote, openQuote
-  
-  local start, l = "[" * m.P"="^0 * "[", nil
-  local longstring = #(m.P'[' * m.S'[=') * m.P(function (s, i)
-    l = start:match(s, i)
-    if not l then return nil end
-    
-    local p = m.P("]"..string.rep("=", l - i - 2).."]")
-    p = (1 - p)^0 * p
-    
-    return p:match(s, l)
-  end)
-  
-  
+	local escapeNum = m.C(N^-3) / tonumber
+	local escapePatt = (
+	    (m.P'\\' * m.S[[ntrvabf'"\\]]) / escapeTable
+	  + (m.P'\\' * escapeNum) / string.char
+	)
+
+	local openDQuote, openQuote = m.P'"' / '', m.P"'" / ''
+	local closeDQuote, closeQuote = openDQuote, openQuote
+
+	local start, l = "[" * m.P"="^0 * "[", nil
+	local longstring = #(m.P'[' * m.S'[=') * m.P(function (s, i)
+		l = start:match(s, i)
+		if not l then return nil end
+
+		local p = m.P("]"..string.rep("=", l - i - 2).."]")
+		p = (1 - p)^0 * p
+
+		return p:match(s, l)
+	end)
+
 	local patt = m.Cs(
-      (openDQuote * ((escapePatt + 1) - closeDQuote)^0 * closeDQuote)
-    + (openQuote * ((escapePatt + 1) - closeQuote)^0 * closeQuote)
-    + longstring / function (c) return string.sub(c, l, -l) end
-  )
-  
-  return patt:match(str)
+	    (openDQuote * ((escapePatt + 1) - closeDQuote)^0 * closeDQuote)
+	  + (openQuote * ((escapePatt + 1) - closeQuote)^0 * closeQuote)
+	  + longstring / function (c) return string.sub(c, l, -l) end
+	)
+
+	return patt:match(str)
 end
 
 --[[
@@ -246,22 +245,22 @@ Transforms a text into a syntactically valid Lua string. Similar to `string.form
 * a string, similar to string.format with option `'%%q'`.
 --]]
 function text2string(text)
-  local function reverseEscape(char)
-    local c = reverseEscapeTable[char]
-    
-    if c then 
-      return c
-    elseif (AZ + N + SPACE + SYMBOL + PUNCTUATION):match(char) then
-      return char
-    else
-      return '\\'..string.byte(char)
-    end
-  end
-  
-  local escapePatt = m.P(1) / reverseEscape
-  local patt = m.Cs(escapePatt^0)
-  
-  return '"'..patt:match(text)..'"'
+	local function reverseEscape(char)
+		local c = reverseEscapeTable[char]
+
+		if c then 
+			return c
+		elseif (AZ + N + SPACE + SYMBOL + PUNCTUATION):match(char) then
+			return char
+		else
+			return '\\'..string.byte(char)
+		end
+	end
+
+	local escapePatt = m.P(1) / reverseEscape
+	local patt = m.Cs(escapePatt^0)
+
+	return '"'..patt:match(text)..'"'
 end
 
 ------------------------------ TOKENS -----------------------------------------
@@ -338,11 +337,11 @@ local number = function (subject, i)
 	--               [.\d]+     .. ( [eE]  ..   [+-]? )?    .. isalnum()*
 	local patt = (m.P'.' + N)^1 * (m.S'eE' * m.S'+-'^-1)^-1 * (N+AZ)^0
 	patt = patt / function(num)
-    if not _G.tonumber(num) then 
-      error('Malformed number: '.._G.tostring(num))(subject,i) 
-    end 
-  end
-  
+		if not _G.tonumber(num) then 
+			error('Malformed number: '.._G.tostring(num))(subject,i) 
+		end 
+	end
+
 	return m.match(patt, subject, i)
 end
 
